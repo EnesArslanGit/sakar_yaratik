@@ -26,7 +26,7 @@ static func group_node(parent: Node3D, pos: Vector3, rot_deg: float = 0.0, node_
 	parent.add_child(n)
 	return n
 
-static func box(parent: Node3D, center: Vector3, size: Vector3, c: Color, solid: bool = true, glow: float = 0.0) -> MeshInstance3D:
+static func box(parent: Node3D, center: Vector3, size: Vector3, c: Variant, solid: bool = true, glow: float = 0.0) -> MeshInstance3D:
 	var bm := BoxMesh.new()
 	bm.size = size
 	var mi := _mesh(parent, bm, center, c, glow)
@@ -36,12 +36,12 @@ static func box(parent: Node3D, center: Vector3, size: Vector3, c: Color, solid:
 		_body(mi, s)
 	return mi
 
-static func cyl(parent: Node3D, center: Vector3, radius: float, height: float, c: Color, solid: bool = true, top_radius: float = -1.0) -> MeshInstance3D:
+static func cyl(parent: Node3D, center: Vector3, radius: float, height: float, c: Variant, solid: bool = true, top_radius: float = -1.0) -> MeshInstance3D:
 	var cm := CylinderMesh.new()
 	cm.bottom_radius = radius
 	cm.top_radius = radius if top_radius < 0.0 else top_radius
 	cm.height = height
-	cm.radial_segments = 12
+	cm.radial_segments = 32
 	cm.rings = 1
 	var mi := _mesh(parent, cm, center, c, 0.0)
 	if solid:
@@ -51,12 +51,12 @@ static func cyl(parent: Node3D, center: Vector3, radius: float, height: float, c
 		_body(mi, s)
 	return mi
 
-static func sphere(parent: Node3D, center: Vector3, radius: float, c: Color, glow: float = 0.0) -> MeshInstance3D:
+static func sphere(parent: Node3D, center: Vector3, radius: float, c: Variant, glow: float = 0.0) -> MeshInstance3D:
 	var sm := SphereMesh.new()
 	sm.radius = radius
 	sm.height = radius * 2.0
-	sm.radial_segments = 12
-	sm.rings = 6
+	sm.radial_segments = 24
+	sm.rings = 12
 	return _mesh(parent, sm, center, c, glow)
 
 ## Görünmez çarpışma kutusu (görseli ince olan eşyalar için tek, dolu engel).
@@ -71,10 +71,10 @@ static func collider(parent: Node3D, center: Vector3, size: Vector3) -> StaticBo
 	parent.add_child(body)
 	return body
 
-static func _mesh(parent: Node3D, mesh: Mesh, center: Vector3, c: Color, glow: float) -> MeshInstance3D:
+static func _mesh(parent: Node3D, mesh: Mesh, center: Vector3, c: Variant, glow: float) -> MeshInstance3D:
 	var mi := MeshInstance3D.new()
 	mi.mesh = mesh
-	mi.material_override = mat(c, glow)
+	mi.material_override = c if c is Material else mat(c, glow)
 	mi.position = center
 	if glow > 0.0:
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
