@@ -24,6 +24,8 @@ var exhausted := false
 var is_running := false
 var has_flashlight := false
 var cinematic := false
+var hidden := false              # dolapta saklanıyor
+var _noise_t := 0.0
 var shake := 0.0
 var target: Node3D = null        # şu an bakılan etkileşimli eşya
 var controls: TouchControls
@@ -33,6 +35,7 @@ var _col: CollisionShape3D
 var _bob_t := 0.0
 
 func _ready() -> void:
+	collision_mask = 1 | 2
 	_col = CollisionShape3D.new()
 	var cap := CapsuleShape3D.new()
 	cap.radius = 0.3
@@ -61,30 +64,26 @@ func _ready() -> void:
 	camera.add_child(flashlight)
 	_mirror_body()
 
-## Sadece aynada görünen basit beden (gölgemsi siluet).
+## Sadece aynada görünen beden: Quaternius mankeni (CC0), normal insan oranında, giysi dokulu.
 func _mirror_body() -> void:
 	var layer := 1 << (Mirror.MIRROR_ONLY_LAYER - 1)
-	var shirt := Materials.solid(Color(0.24, 0.27, 0.33), 0.8)
-	var skin := Materials.solid(Color(0.55, 0.42, 0.36), 0.6)
-	var hair := Materials.solid(Color(0.06, 0.05, 0.04), 0.9)
-	var body := Node3D.new()
-	body.position.z = 0.06
-	add_child(body)
-	var torso := _capsule(body, Vector3(0, 1.13, 0), 0.19, 0.72, shirt)
-	torso.scale = Vector3(1.0, 1.0, 0.55)
-	_capsule(body, Vector3(0, 1.4, 0), 0.085, 0.5, shirt).rotation_degrees.z = 90
-	for sx in [-1.0, 1.0]:
-		var arm := _capsule(body, Vector3(sx * 0.255, 1.1, 0), 0.055, 0.62, shirt)
-		arm.rotation_degrees.z = sx * 4.0
-		Props.sphere(body, Vector3(sx * 0.27, 0.77, 0), 0.045, skin)
-	Props.cyl(body, Vector3(0, 1.5, 0), 0.055, 0.12, skin, false)
-	var head := Props.sphere(body, Vector3(0, 1.63, -0.01), 0.105, skin)
-	head.scale = Vector3(0.9, 1.15, 1.0)
-	var hair_m := Props.sphere(body, Vector3(0, 1.675, 0.015), 0.104, hair)
-	hair_m.scale = Vector3(0.95, 0.85, 1.0)
-	for mi in body.find_children("*", "MeshInstance3D", true, false):
-		(mi as MeshInstance3D).layers = layer
-		(mi as MeshInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var inst: Node3D = (load("res://assets/characters/ual/ual.glb") as PackedScene).instantiate()
+	inst.rotation_degrees.y = 180.0
+	inst.scale = Vector3.ONE * 0.95
+	inst.position.z = 0.08
+	add_child(inst)
+	var mi: MeshInstance3D = inst.find_child("Mannequin", true, false)
+	var shirt := Materials.surface("cotton_jersey", 0.25, Color(0.3, 0.33, 0.4)).duplicate() as StandardMaterial3D
+	shirt.uv1_world_triplanar = false
+	var dark := Materials.solid(Color(0.08, 0.08, 0.1), 0.8)
+	mi.set_surface_override_material(0, shirt)
+	if mi.mesh.get_surface_count() > 1:
+		mi.set_surface_override_material(1, dark)
+	mi.layers = layer
+	mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var ap: AnimationPlayer = inst.find_child("AnimationPlayer", true, false)
+	ap.get_animation("Idle").loop_mode = Animation.LOOP_LINEAR
+	ap.play("Idle")
 	# Yansımadaki yüzü okunur kılan hafif dolgu ışığı (sadece aynadaki bedeni aydınlatır).
 	var fill := OmniLight3D.new()
 	fill.position = Vector3(0, 1.6, -0.9)
@@ -94,18 +93,6 @@ func _mirror_body() -> void:
 	fill.light_cull_mask = layer
 	add_child(fill)
 
-func _capsule(parent: Node3D, pos: Vector3, r: float, h: float, m: Material) -> MeshInstance3D:
-	var cm := CapsuleMesh.new()
-	cm.radius = r
-	cm.height = h
-	cm.radial_segments = 24
-	cm.rings = 8
-	var mi := MeshInstance3D.new()
-	mi.mesh = cm
-	mi.material_override = m
-	mi.position = pos
-	parent.add_child(mi)
-	return mi
 
 func set_controls(c: TouchControls) -> void:
 	controls = c
@@ -163,6 +150,9 @@ func _physics_process(delta: float) -> void:
 		return
 	if controls:
 		_look(controls.consume_look() * TOUCH_SENS)
+	if hidden:
+		target = _find_target()
+		return
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	if controls:
 		input += controls.move_vector
@@ -181,6 +171,7 @@ func _physics_process(delta: float) -> void:
 		velocity.y = 0.0
 	move_and_slide()
 	_head_bob(delta)
+	_make_noise(delta, moving)
 	target = _find_target()
 
 ## Bakış yönüne en yakın, menzildeki etkileşimli eşya.
@@ -203,6 +194,13 @@ func _find_target() -> Node3D:
 			best = node
 			best_score = score
 	return best
+
+## Koşmak gürültü yapar (yaratık duyar), yürümek çok az.
+func _make_noise(delta: float, moving: bool) -> void:
+	_noise_t -= delta
+	if moving and _noise_t <= 0.0:
+		_noise_t = 0.4
+		NoiseBus.emit(global_position, MonsterConfig.NOISE_RUN if is_running else MonsterConfig.NOISE_WALK, "player")
 
 func _update_stamina(delta: float, trying: bool) -> void:
 	if exhausted and stamina >= STAMINA_RESUME:

@@ -1,5 +1,21 @@
 # İlerleme Kaydı
 
+## 2026-11-08 — Aşama 2-5: Yaratık, sakarlık, oyun döngüsü, atmosfer
+- Yaratık: Quaternius UAL manken (CC0, Godot Asset Store'dan) + ProportionMod (kol 1.4, bacak 0.78, kafa 0.72, kambur) + mor-gri deri, parlayan gözler, sırıtış.
+- Beyin: navmesh (runtime bake), devriye/şüphe/kovalama/arama, görme (fener açıksa 13 m, kapalı 7 m), duyma (koşu 8 m), kapıları çarparak açar.
+- 7 sakarlık (UAL animasyonları: Death01 düşme/geri kalkma, Hit_Head, Interact, Push, Swim_Idle, Hit_Chest, Crouch) + ekranda yön ping'i.
+- Döngü: menü, duraklat (Esc/II), 3 anahtar parçası (rastgele odalar), dolaba saklanma, yakalanma (+1 kez KAÇ! şansı), DEMO BİTTİ (süre), Tekrar Dene = karanlıktan devam.
+- Atmosfer: karartma sonrası sis, kalp atışı (yaratık yakınlığı), kenar kararması, lambalar ara sıra titrer, fırtına ambiyansı.
+- Sesler: Wikimedia Commons (CC0/PD/CC BY), `assets/sounds/CREDITS.md`. İndirme hız sınırı (429) nedeniyle bazıları gecikti; eksik olan kodla yedek çalar.
+- Aynadaki oyuncu: aynı manken normal oranda. Korku sahnesinde aynada gerçek yaratık modeli.
+- Engellenen: ffmpeg/OpenGameArt indirme izni verilmedi → kırpma oyun içinde (Sfx FILES tablosu, en fazla süre).
+- Sonraya: tablolar siyah; Shelf_01 boş; yaratık seslerine özel kayıt (Freesound üyeliği gerekir).
+
+## 2026-11-08 — Kullanıcı kararları (otomatik mod)
+- Kullanıcı: "Oyunu bitirene kadar izin istemeden devam et; test edebilirsin ama oyunu bana açma."
+- Kaynaklar: sadece üyeliksiz ücretsiz (CC0 vb.) kaynaklar. Yaratık: plandaki görünüm. APK: şimdilik yok.
+- Kullanıcı karakteri/yaratığı ve kodla üretilen sesleri beğenmedi → gerçek ses kayıtları ve daha iyi modeller.
+
 ## 2026-11-08 — Giriş hikâyesi, kapılar, pencereler, ayna (kullanıcı isteği)
 - Hikâye: 03:07 alarm, yatakta uyanış → banyoda yüz yıkama → aynada yaratık → pencereler kararır, lambalar patlar → komodindeki fener → çıkış kilitli.
 - Yeni: menteşeli iç kapılar (KULLAN), 5 pencere (perde, ay ışığı), gerçek ayna, lathe porselen klozet/lavabo, banyo/yatak odası eşyaları, kodla sesler.

@@ -6,6 +6,7 @@ extends Control
 
 signal flashlight_pressed
 signal interact_pressed
+signal pause_pressed
 
 const JOY_RADIUS := 85.0
 const JOY_ZONE := 0.45   # ekranın sol %45'i joystick alanı
@@ -41,6 +42,7 @@ func _buttons() -> Dictionary:
 		"run": {"pos": Vector2(s.x - 125, s.y - 135), "r": 72.0, "text": "KOŞ"},
 		"interact": {"pos": Vector2(s.x - 290, s.y - 90), "r": 58.0, "text": "KULLAN"},
 	}
+	b["pause"] = {"pos": Vector2(s.x - 50, 105), "r": 30.0, "text": "II"}
 	if show_flash:
 		b["flashlight"] = {"pos": Vector2(s.x - 125, s.y - 310), "r": 52.0, "text": "FENER"}
 	return b
@@ -74,6 +76,7 @@ func _on_press(idx: int, pos: Vector2) -> void:
 				"run": run_held = true
 				"flashlight": flashlight_pressed.emit()
 				"interact": interact_pressed.emit()
+				"pause": pause_pressed.emit()
 			return
 	if pos.x < size.x * JOY_ZONE and _joy_index == -1:
 		_joy_index = idx

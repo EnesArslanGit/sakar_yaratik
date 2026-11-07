@@ -22,6 +22,7 @@ static func create(parent: Node3D, d: Dictionary) -> InteriorDoor:
 
 func _build(d: Dictionary) -> void:
 	add_to_group("interactable")
+	add_to_group("door")
 	var a: float = d["a"]
 	var b: float = d["b"]
 	var at: float = d["at"]
@@ -54,6 +55,7 @@ func _leaf(width: float) -> void:
 	var dh := HouseLayout.DOOR_H - 0.03
 	var body := AnimatableBody3D.new()
 	body.sync_to_physics = false
+	body.collision_layer = 2   # navigasyon ağını kesmesin; oyuncu yine çarpar
 	_hinge.add_child(body)
 	var cs := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
@@ -82,9 +84,20 @@ func interact(_player: Node) -> void:
 	if locked:
 		Sfx.play(self, "locked", get_meta("focus"))
 		return
-	is_open = not is_open
-	Sfx.play(self, "door_open" if is_open else "door_close", get_meta("focus"))
+	_swing(not is_open, "door_open" if not is_open else "door_close", 0.0)
+	NoiseBus.emit(get_meta("focus"), MonsterConfig.NOISE_DOOR, "door")
+
+## Yaratık kapalı kapıyı hızla çarparak açar.
+func slam_open() -> void:
+	if is_open:
+		return
+	_swing(true, "door_close", 6.0, 0.35)
+
+func _swing(open: bool, sound: String, vol: float, time: float = -1.0) -> void:
+	is_open = open
+	Sfx.play(self, sound, get_meta("focus"), vol)
 	if _tween:
 		_tween.kill()
 	_tween = create_tween().set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_tween.tween_property(_hinge, "rotation:y", _open_yaw if is_open else _closed_yaw, 0.9 if is_open else 0.6)
+	var dur := time if time > 0.0 else (0.9 if is_open else 0.6)
+	_tween.tween_property(_hinge, "rotation:y", _open_yaw if is_open else _closed_yaw, dur)

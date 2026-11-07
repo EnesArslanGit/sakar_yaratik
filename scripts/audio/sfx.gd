@@ -1,37 +1,89 @@
 class_name Sfx
-## Tüm sesler burada, kodla üretilir (dosya yok). Her sesin tek bir adı var:
-## alarm, water, splash, sting, pop, buzz, door_open, door_close, locked, pickup.
-## İleride gerçek ses dosyası eklenirse sadece _make() içinde o ada dosya yüklemek yeter.
+## Tüm sesler burada, ad ile çalınır. Önce `assets/sounds/` içindeki gerçek kayıt (CREDITS.md) kullanılır;
+## dosya yoksa kodla üretilen yedek ses çalar. Yeni/daha iyi ses eklemek için FILES tablosunu değiştir.
+## Alan: [dosya(lar), döngü mü, en fazla süre sn (0 = tamamı), başlangıç sn (-1 = rastgele yer)]
 
 const RATE := 22050
+const DIR := "res://assets/sounds/"
+const FILES := {
+	"alarm": [["alarm.mp3"], true, 0.0, 0.0],
+	"water": [["water.ogg"], true, 0.0, 0.0],
+	"splash": [["splash.ogg"], false, 1.4, 0.0],
+	"door_open": [["door_open.ogg"], false, 1.6, 0.0],
+	"squeak": [["door_open.ogg"], false, 1.0, 0.0],
+	"door_close": [["door_close.wav"], false, 1.2, 0.0],
+	"locked": [["locked.wav"], false, 1.0, 0.0],
+	"pickup": [["locked.wav"], false, 0.5, 0.0],
+	"thud": [["thud.ogg"], false, 0.0, 0.0],
+	"step_heavy": [["thud.ogg"], false, 0.0, 0.0],
+	"donk": [["hit.mp3"], false, 0.0, 0.0],
+	"growl": [["growl1.ogg", "growl2.ogg"], false, 3.0, -1.0],
+	"whimper": [["growl2.ogg"], false, 1.2, -1.0],
+	"laugh": [["laugh.ogg"], false, 3.0, -1.0],
+	"sneeze": [["sneeze.ogg"], false, 2.0, 0.0],
+	"glass": [["glass1.wav", "glass2.wav"], false, 2.0, 0.0],
+	"pop": [["glass1.wav", "glass2.wav"], false, 1.2, 0.0],
+	"heartbeat": [["heartbeat.wav"], true, 0.0, 0.0],
+	"breath": [["breath.ogg"], true, 0.0, 0.0],
+	"storm": [["storm.ogg"], true, 0.0, -1.0],
+}
 static var _cache := {}
 
-## pos verilirse 3D konumlu çalar; verilmezse düz (arayüz) sesi.
-static func play(parent: Node, sound: String, pos: Variant = null, volume_db: float = 0.0) -> Node:
+## pos verilirse 3D konumlu çalar; verilmezse düz (arayüz) sesi. pitch: perde (1 = normal).
+static func play(parent: Node, sound: String, pos: Variant = null, volume_db: float = 0.0, pitch: float = 1.0) -> Node:
 	var stream := get_stream(sound)
+	var info: Array = FILES.get(sound, [[], false, 0.0, 0.0])
+	var loop: bool = info[1] or (stream is AudioStreamWAV and (stream as AudioStreamWAV).loop_mode != AudioStreamWAV.LOOP_DISABLED)
 	var pl: Node
 	if pos == null:
 		var p2 := AudioStreamPlayer.new()
 		p2.stream = stream
 		p2.volume_db = volume_db
+		p2.pitch_scale = pitch
 		pl = p2
 	else:
 		var p3 := AudioStreamPlayer3D.new()
 		p3.stream = stream
 		p3.volume_db = volume_db
+		p3.pitch_scale = pitch
 		p3.unit_size = 3.0
-		p3.max_distance = 25.0
+		p3.max_distance = 28.0
 		pl = p3
 	var root := parent.get_tree().current_scene
 	root.add_child(pl)
 	if pos != null:
 		(pl as Node3D).global_position = pos
-	pl.call("play")
-	if stream.loop_mode == AudioStreamWAV.LOOP_DISABLED:
+	var start: float = info[3]
+	if start < 0.0:
+		start = randf() * maxf(stream.get_length() - maxf(info[2], 1.0), 0.0)
+	pl.call("play", start)
+	if loop:
+		pl.connect("finished", func(): pl.call("play"))
+	else:
 		pl.connect("finished", pl.queue_free)
+		if info[2] > 0.0:
+			_stop_later(pl, info[2] / pitch)
 	return pl
 
-static func get_stream(sound: String) -> AudioStreamWAV:
+static func _stop_later(pl: Node, sec: float) -> void:
+	await pl.get_tree().create_timer(sec).timeout
+	if is_instance_valid(pl):
+		var tw := pl.create_tween()
+		tw.tween_property(pl, "volume_db", -40.0, 0.25)
+		tw.tween_callback(pl.queue_free)
+
+static func get_stream(sound: String) -> AudioStream:
+	var info: Array = FILES.get(sound, [[], false, 0.0, 0.0])
+	var files: Array = info[0]
+	var existing := []
+	for f in files:
+		if ResourceLoader.exists(DIR + f):
+			existing.append(f)
+	if not existing.is_empty():
+		var pick: String = existing[randi() % existing.size()]
+		if not _cache.has(pick):
+			_cache[pick] = load(DIR + pick)
+		return _cache[pick]
 	if not _cache.has(sound):
 		_cache[sound] = _make(sound)
 	return _cache[sound]
@@ -48,6 +100,12 @@ static func _make(sound: String) -> AudioStreamWAV:
 		"door_close": return _wav(_thump())
 		"locked": return _wav(_rattle())
 		"pickup": return _wav(_pickup())
+		"door_slam", "thud", "step_heavy", "donk": return _wav(_thump())
+		"glass": return _wav(_pop())
+		"squeak": return _wav(_creak(0.5))
+		"growl", "whimper", "laugh": return _wav(_sting())
+		"sneeze": return _wav(_noise_burst(0.6, 0.3, 0.6))
+		"heartbeat", "breath", "storm": return _wav(PackedFloat32Array([0.0]))
 	push_warning("Bilinmeyen ses: " + sound)
 	return _wav(PackedFloat32Array([0.0]))
 
