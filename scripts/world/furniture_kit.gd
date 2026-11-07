@@ -36,7 +36,7 @@ static func counter(p: Node3D, pos: Vector3, rot: float, w: float) -> Node3D:
 		Props.box(n, Vector3(x, 0.32, 0.305), Vector3(dw - 0.03, 0.4, 0.02), door, false)
 		var h := Props.cyl(n, Vector3(x, 0.66, 0.33), 0.008, 0.14, chrome(), false)
 		h.rotation_degrees.z = 90
-	Props.box(n, Vector3(0, 1.5, -0.29), Vector3(w, 1.1, 0.02), Materials.surface("checkered_pavement_tiles", 0.5, Color(0.9, 0.95, 0.95)), false)
+	Props.box(n, Vector3(0, 1.07, -0.29), Vector3(w, 0.32, 0.02), Materials.surface("checkered_pavement_tiles", 0.5, Color(0.9, 0.95, 0.95)), false)
 	return n
 
 static func fridge(p: Node3D, pos: Vector3, rot: float) -> Node3D:
@@ -92,33 +92,6 @@ static func _stadium(parent: CSGCombiner3D, r: float, half_len: float, h: float,
 		cy.position = Vector3(0, lift, s * half_len)
 		cy.operation = op
 		parent.add_child(cy)
-
-static func toilet(p: Node3D, pos: Vector3, rot: float) -> Node3D:
-	var n := Props.group_node(p, pos, rot, "Toilet")
-	var c := ceramic()
-	var base := Props.cyl(n, Vector3(0, 0.2, 0.08), 0.14, 0.4, c, false, 0.2)
-	base.scale = Vector3(1, 1, 1.3)
-	var seat := torus(n, Vector3(0, 0.41, 0.1), 0.11, 0.2, Materials.solid(Color(0.95, 0.95, 0.93), 0.3))
-	seat.scale = Vector3(1, 0.6, 1.3)
-	Props.box(n, Vector3(0, 0.62, -0.2), Vector3(0.42, 0.4, 0.17), c, false)
-	Props.box(n, Vector3(0, 0.835, -0.2), Vector3(0.45, 0.03, 0.2), c, false)
-	Props.cyl(n, Vector3(0, 0.855, -0.2), 0.022, 0.015, chrome(), false)
-	Props.collider(n, Vector3(0, 0.42, -0.02), Vector3(0.45, 0.84, 0.62))
-	return n
-
-static func sink(p: Node3D, pos: Vector3, rot: float) -> Node3D:
-	var n := Props.group_node(p, pos, rot, "Sink")
-	var c := ceramic()
-	Props.cyl(n, Vector3(0, 0.38, -0.05), 0.07, 0.76, c, false, 0.1)
-	var basin := Props.cyl(n, Vector3(0, 0.83, 0.02), 0.18, 0.16, c, false, 0.29)
-	basin.scale = Vector3(1, 1, 0.75)
-	var inner := Props.cyl(n, Vector3(0, 0.905, 0.02), 0.24, 0.01, Materials.solid(Color(0.7, 0.72, 0.72), 0.1), false)
-	inner.scale = Vector3(1, 1, 0.75)
-	Props.cyl(n, Vector3(0, 0.98, -0.17), 0.015, 0.16, chrome(), false)
-	var spout := Props.cyl(n, Vector3(0, 1.05, -0.11), 0.012, 0.13, chrome(), false)
-	spout.rotation_degrees.x = 90
-	Props.collider(n, Vector3(0, 0.45, 0), Vector3(0.58, 0.9, 0.45))
-	return n
 
 ## Halı: çarpışmasız, yaratık üstünde kayabilir (Aşama 3).
 static func rug(p: Node3D, pos: Vector3, w: float, d: float, tint: Color) -> Node3D:

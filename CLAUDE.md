@@ -12,24 +12,25 @@ Kullanıcı kod bilmez; sadece test eder, Türkçe geri bildirim verir. Özetler
 - Oyunu kullanıcıya açmak: `C:\Godot\godot.exe --path E:\oyunlar\SakarYaratik`
 
 ## Dosya haritası
-- `project.godot` — ayarlar (1280x720, canvas_items/expand, Compatibility, fareyle dokunma taklidi)
-- `scenes/main.tscn` — sade kök düğüm, `main.gd` bağlı
-- `scripts/game/main.gd` — giriş: ortam, ev, oyuncu, UI kurar; test argümanları `-- pose=x,z,yaw[,pitch] shot=yol.png`
-- `scripts/game/input_setup.gd` — klavye test kısayolları (WASD, F, E, Shift, Esc, F3)
-- `scripts/world/house_layout.gd` — oda/duvar/kapı verileri, doğma noktası (12x10 m ev)
-- `scripts/world/house_builder.gd` — zemin, tavan, duvar gövdesi, oda iç kaplaması, süpürgelik, kapı kasası, lambalar
-- `scripts/world/house_furniture.gd` — odalara eşya yerleşimi (M()=model, B()=kırılabilir model)
-- `scripts/world/furniture_kit.gd` — modeli olmayanlar kodla: tezgâh, buzdolabı, CSG küvet, klozet, lavabo, halı
-- `scripts/world/model_lib.gd` — gltf model yerleştirme + otomatik çarpışma kutusu
-- `scripts/world/materials.gd` — dokulu malzemeler (triplanar), oda zemin/duvar tablosu
-- `scripts/world/exit_door.gd` — panelli çıkış kapısı + ÇIKIŞ tabelası
-- `assets/models/<id>/`, `assets/textures/<id>/` — Poly Haven CC0 (model 1k, doku 2k). Yeni indirme: Poly Haven API, User-Agent SakarYaratikDemo/1.0
-- `scripts/world/props.gd` — kutu/silindir/küre + çarpışma, materyal önbelleği
-- `scripts/world/environment_setup.gd` — WorldEnvironment (karanlık ortam)
-- `scripts/player/player.gd` — hareket, bakış, koşma/dayanıklılık, fener, sağ tık = fare yakalama
-- `scripts/ui/touch_controls.gd` — joystick (sol), bakış (sağ), KOŞ/KULLAN/FENER butonları
-- `scripts/ui/hud.gd` — nişangâh, dayanıklılık barı, PC ipucu yazısı
-- Ekran görüntüsüyle kendin kontrol et: `godot_console.exe --path . -- pose=... shot=<scratchpad>/x.png`
+- `project.godot` — ayarlar (Compatibility, MSAA 4x, anizotropik, 1600x900 maksimize)
+- `scripts/game/main.gd` — giriş; test arg: `-- pose=x,z,yaw[,pitch] light story=wash wait=sn shot=yol.png`
+- `scripts/game/story.gd` — giriş hikâyesi (uyanış→yüz yıkama→ayna korkusu→karartma→fener→kilitli kapı)
+- `scripts/game/interactable.gd` — eşyaya KULLAN etkileşimi ekler (`used` sinyali); `input_setup.gd` klavye
+- `scripts/world/house_layout.gd` — oda/duvar/kapı/pencere verisi, `openings()`; doğma noktası yatak odası
+- `scripts/world/house_builder.gd` — zemin/tavan/duvar, oda kaplaması, süpürgelik, kasalar, lambalar
+- `scripts/world/house_furniture.gd` — eşya yerleşimi (M()=model, B()=kırılabilir); hikâye grupları
+- `scripts/world/furniture_kit.gd` — tezgâh, buzdolabı, CSG küvet, halı; `bathroom_kit.gd` klozet/lavabo/havlu (Lathe)
+- `scripts/world/lathe.gd` — profil döndürerek pürüzsüz mesh; `props.gd` temel şekiller
+- `scripts/world/model_lib.gd` — gltf yerleştirme + çarpışma; `materials.gd` dokulu malzemeler
+- `scripts/world/interior_door.gd` — menteşeli iç kapı (aç/kapa/kilit); `exit_door.gd` çıkış kapısı
+- `scripts/world/window_builder.gd` — pencere, perde, gökyüzü, ay ışığı, `set_all_dark()`
+- `scripts/world/mirror.gd` — gerçek ayna (SubViewport); katman 2 = sadece aynada görünen
+- `scripts/world/lamp_control.gd` — lamba titreme/patlama; `environment_setup.gd` ortam
+- `scripts/monster/scare_face.gd` — aynadaki yaratık yüzü
+- `scripts/player/player.gd` — hareket, fener (sonradan), etkileşim hedefi, sinematik kilit, aynadaki beden
+- `scripts/ui/touch_controls.gd` — joystick, bakış, KOŞ/KULLAN/(FENER); `hud.gd` görev/altyazı/ipucu/fade
+- `scripts/audio/sfx.gd` — kodla üretilen tüm sesler (ad ile)
+- `assets/` — Poly Haven CC0 model (1k) / doku (2k)
 
 ## Kod kuralları
 - Her script tek iş, ≤300 satır. Sahne/eşya/ışık kodla kurulur, .tscn minimum.
@@ -38,7 +39,7 @@ Kullanıcı kod bilmez; sadece test eder, Türkçe geri bildirim verir. Özetler
 - Her çalışan adımdan sonra kısa Türkçe commit.
 
 ## Şu an neredeyiz
-Aşama 1 + gerçekçi görsel yenileme bitti (kullanıcı testi bekleniyor). Sıradaki: Aşama 2 (yaratık, sakarlıksız).
+Aşama 1 + görsel + giriş hikâyesi bitti (test bekleniyor). Sıradaki: Aşama 2 yaratık (kapılar AnimatableBody, navigasyon kapıları hesaba katmalı). Sıradaki: Aşama 2 (yaratık, sakarlıksız).
 
 ## Bilinen hatalar
 - Yok.

@@ -1,5 +1,12 @@
 # İlerleme Kaydı
 
+## 2026-11-08 — Giriş hikâyesi, kapılar, pencereler, ayna (kullanıcı isteği)
+- Hikâye: 03:07 alarm, yatakta uyanış → banyoda yüz yıkama → aynada yaratık → pencereler kararır, lambalar patlar → komodindeki fener → çıkış kilitli.
+- Yeni: menteşeli iç kapılar (KULLAN), 5 pencere (perde, ay ışığı), gerçek ayna, lathe porselen klozet/lavabo, banyo/yatak odası eşyaları, kodla sesler.
+- Kararlar: fener başta yok (bulununca FENER butonu çıkar); karartma sonrası ortam ışığı 0.1 mavi; aynadaki oyuncu sade siluet.
+- Kullanıcının "kapıları açmak için odada kilit" isteği: şimdilik kapılar kapalı/açılabilir, çıkış kilitli; anahtar parçaları Aşama 4.
+- Sonraya: tablo resimleri siyah; Shelf_01 boş (kitap yok).
+
 ## 2026-11-08 — Görsel yenileme (kullanıcı: "Minecraft gibi küp küp, çözünürlük kötü")
 - Kullanıcı kararı: gerçek CC0 doku + model (Poly Haven). 33 model (1k), 11 doku (2k) `assets/` altında.
 - Ev: dokulu zemin/duvar/tavan, oda başı farklı kaplama, süpürgelik, kapı kasaları, panelli çıkış kapısı, duy+ampul lamba.

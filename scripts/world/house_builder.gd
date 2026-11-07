@@ -20,20 +20,18 @@ static func build(root: Node3D) -> Node3D:
 	Props.box(house, Vector3(6, H + 0.05, 5), Vector3(12.4, 0.1, 10.4), Materials.surface("ceiling_interior", 2.0, Color(0.8, 0.78, 0.74)))
 	var core := Materials.solid(Color(0.3, 0.28, 0.25), 0.9)
 	for w in HouseLayout.WALLS:
-		var cuts := _sorted_doors(w["doors"])
+		var cuts := HouseLayout.openings(w["axis"], w["at"])
 		_split(house, w["axis"], w["at"], w["from"], w["to"], cuts, T, core, true)
-		for d in cuts:
+		for d in w["doors"]:
 			_door_frame(house, w["axis"], w["at"], d[0], d[1])
+	WindowBuilder.build(house)
+	for d in HouseLayout.DOORS:
+		InteriorDoor.create(house, d)
 	ExitDoor.build(house)
 	HouseFurniture.build(house)
 	return house
 
-static func _sorted_doors(doors: Array) -> Array:
-	var cuts := doors.duplicate()
-	cuts.sort_custom(func(a, b): return a[0] < b[0])
-	return cuts
-
-## Çizgi boyunca [a,b] aralığını kapı boşluklarıyla bölüp kutular koyar (kapı üstüne lento).
+## Çizgi boyunca [a,b] aralığını boşluklarla (kapı [a,b] / pencere [a,b,y0,y1]) bölüp kutular koyar.
 static func _split(p: Node3D, axis: String, at: float, a: float, b: float, cuts: Array, thick: float, m: Material, solid: bool, y_top: float = H, y_bottom: float = 0.0) -> void:
 	var start := a
 	for d in cuts:
@@ -41,9 +39,11 @@ static func _split(p: Node3D, axis: String, at: float, a: float, b: float, cuts:
 		var d1: float = minf(d[1], b)
 		if d1 <= a or d0 >= b:
 			continue
+		var oy0: float = d[2] if d.size() > 2 else 0.0
+		var oy1: float = d[3] if d.size() > 2 else HouseLayout.DOOR_H
 		_piece(p, axis, at, start, d0, y_bottom, y_top, thick, m, solid)
-		if y_top > HouseLayout.DOOR_H:
-			_piece(p, axis, at, d0, d1, maxf(HouseLayout.DOOR_H, y_bottom), y_top, thick, m, solid)
+		_piece(p, axis, at, d0, d1, y_bottom, minf(oy0, y_top), thick, m, solid)
+		_piece(p, axis, at, d0, d1, maxf(oy1, y_bottom), y_top, thick, m, solid)
 		start = d1
 	_piece(p, axis, at, start, b, y_bottom, y_top, thick, m, solid)
 
@@ -71,19 +71,12 @@ static func _room_skin(p: Node3D, room_name: String, r: Rect2) -> void:
 		["x", x0, z0 + o, z1 - o, 1.0], ["x", x1, z0 + o, z1 - o, -1.0],
 	]
 	for s in sides:
-		var cuts := _doors_on(s[0], s[1])
+		var cuts := HouseLayout.openings(s[0], s[1])
 		var at: float = s[1] + s[4] * (o + 0.006)
 		_split(p, s[0], at, s[2], s[3], cuts, 0.012, wall_m, false)
 		if room_name != "Banyo":
 			var bt: float = s[1] + s[4] * (o + 0.012)
 			_split(p, s[0], bt, s[2], s[3], cuts, 0.024, trim_m, false, 0.11)
-
-static func _doors_on(axis: String, at: float) -> Array:
-	var out := []
-	for w in HouseLayout.WALLS:
-		if w["axis"] == axis and absf(w["at"] - at) < 0.01:
-			out.append_array(w["doors"])
-	return _sorted_doors(out)
 
 ## Kapı kasası: iki yan pervaz + üst pervaz (her iki yüzde) ve boşluk içi kaplama.
 static func _door_frame(p: Node3D, axis: String, at: float, a: float, b: float) -> void:

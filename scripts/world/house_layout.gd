@@ -30,6 +30,36 @@ const WALLS := [
 	{"axis": "x", "at": 7.0, "from": 6.1, "to": 9.9, "doors": []},
 ]
 
+## Pencereler (dış duvarlarda): a-b duvar boyunca, y0-y1 yükseklik, out = dışarı yönü (normal işareti).
+const WINDOWS := [
+	{"room": "Salon", "axis": "z", "at": 0.0, "a": 3.95, "b": 4.95, "y0": 0.9, "y1": 2.0, "out": -1.0},
+	{"room": "Mutfak", "axis": "z", "at": 0.0, "a": 7.2, "b": 8.4, "y0": 1.3, "y1": 2.0, "out": -1.0, "curtains": false},
+	{"room": "Koridor", "axis": "x", "at": 0.0, "a": 4.5, "b": 5.5, "y0": 0.9, "y1": 2.0, "out": -1.0},
+	{"room": "Yatak", "axis": "z", "at": 10.0, "a": 0.9, "b": 2.1, "y0": 0.9, "y1": 2.0, "out": 1.0},
+	{"room": "Banyo", "axis": "z", "at": 10.0, "a": 10.4, "b": 11.4, "y0": 1.35, "y1": 1.95, "out": 1.0, "curtains": false},
+]
+
+## Menteşeli iç kapılar: hinge = kanadın takıldığı uç ("a"/"b"), swing = açıldığı taraf (normal işareti).
+const DOORS := [
+	{"axis": "z", "at": 4.0, "a": 4.0, "b": 5.0, "hinge": "a", "swing": -1.0},
+	{"axis": "z", "at": 4.0, "a": 9.0, "b": 10.0, "hinge": "b", "swing": -1.0},
+	{"axis": "z", "at": 6.0, "a": 2.0, "b": 3.0, "hinge": "a", "swing": 1.0},
+	{"axis": "z", "at": 6.0, "a": 9.0, "b": 10.0, "hinge": "b", "swing": 1.0},
+	{"axis": "x", "at": 6.0, "a": 1.5, "b": 2.5, "hinge": "a", "swing": 1.0},
+]
+
+## Duvar çizgisindeki tüm boşluklar: kapılar [a,b] + pencereler [a,b,y0,y1].
+static func openings(axis: String, at: float) -> Array:
+	var out := []
+	for w in WALLS:
+		if w["axis"] == axis and absf(w["at"] - at) < 0.01:
+			out.append_array(w["doors"])
+	for win in WINDOWS:
+		if win["axis"] == axis and absf(win["at"] - at) < 0.01:
+			out.append([win["a"], win["b"], win["y0"], win["y1"]])
+	out.sort_custom(func(x, y): return x[0] < y[0])
+	return out
+
 const EXIT_DOOR := Vector3(3.1, 0.0, 0.0)
-const PLAYER_SPAWN := Vector3(3.1, 0.05, 1.3)
-const PLAYER_SPAWN_YAW := 180.0
+const PLAYER_SPAWN := Vector3(3.1, 0.05, 8.6)
+const PLAYER_SPAWN_YAW := 0.0

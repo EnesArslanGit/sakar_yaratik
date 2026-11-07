@@ -13,6 +13,7 @@ const JOY_ZONE := 0.45   # ekranın sol %45'i joystick alanı
 var move_vector := Vector2.ZERO
 var run_held := false
 var flash_on := true
+var show_flash := false   # fener bulununca görünür
 
 var _look_delta := Vector2.ZERO
 var _joy_index := -1
@@ -36,11 +37,13 @@ func consume_look() -> Vector2:
 
 func _buttons() -> Dictionary:
 	var s := size
-	return {
+	var b := {
 		"run": {"pos": Vector2(s.x - 125, s.y - 135), "r": 72.0, "text": "KOŞ"},
 		"interact": {"pos": Vector2(s.x - 290, s.y - 90), "r": 58.0, "text": "KULLAN"},
-		"flashlight": {"pos": Vector2(s.x - 125, s.y - 310), "r": 52.0, "text": "FENER"},
 	}
+	if show_flash:
+		b["flashlight"] = {"pos": Vector2(s.x - 125, s.y - 310), "r": 52.0, "text": "FENER"}
+	return b
 
 func _joy_rest() -> Vector2:
 	return Vector2(170, size.y - 170)
